@@ -1075,6 +1075,7 @@ class NetworkTrainer:
                                 "Authorization": f"Bearer {args.http_log_token}",
                             }
 
+                            print("POST", args.http_log_endpoint)
                             try:
                                 requests.post(args.http_log_endpoint, json=payload, headers=headers, timeout=5)
                             except:
@@ -1288,6 +1289,13 @@ if __name__ == "__main__":
     parser = setup_parser()
 
     args = parser.parse_args()
+
+    print("HTTP Log", args.http_log)
+    print("HTTP Log Name", args.http_log_name)
+    print("HTTP Log Token", args.http_log_token)
+    print("HTTP Log Endpoint", args.http_log_endpoint)
+    print("HTTP Log Every", args.http_log_every)
+
     train_util.verify_command_line_training_args(args)
     args = train_util.read_config_from_file(args, parser)
 
