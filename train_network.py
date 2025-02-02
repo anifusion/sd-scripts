@@ -45,6 +45,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import requests
+
 
 class NetworkTrainer:
     def __init__(self):
@@ -887,6 +889,7 @@ class NetworkTrainer:
                 initial_step -= len(train_dataloader)
             global_step = initial_step
 
+        log_batch = []
         for epoch in range(epoch_to_start, num_train_epochs):
             accelerator.print(f"\nepoch {epoch+1}/{num_train_epochs}")
             current_epoch.value = epoch + 1
@@ -1057,6 +1060,26 @@ class NetworkTrainer:
                         args, current_loss, avr_loss, lr_scheduler, lr_descriptions, keys_scaled, mean_norm, maximum_norm
                     )
                     accelerator.log(logs, step=global_step)
+                    if args.http_log:
+                        log_batch.append({
+                            "logs": logs,
+                            "step": global_step
+                        })
+
+                        if len(log_batch) % args.http_log_every == 0:
+                            payload = {
+                                "name": args.http_log_name,
+                                "log_batch": log_batch
+                            }
+                            headers = {
+                                "Authorization": f"Bearer {args.http_log_token}",
+                            }
+
+                            try:
+                                requests.post(args.http_log_endpoint, json=payload, headers=headers, timeout=5)
+                            except:
+                                print("failed to POST training logs")
+                            log_batch = []
 
                 if global_step >= args.max_train_steps:
                     break
@@ -1225,6 +1248,36 @@ def setup_parser() -> argparse.ArgumentParser:
         help="initial step number including all epochs, 0 means first step (same as not specifying). overwrites initial_epoch."
         + " / 初期ステップ数、全エポックを含むステップ数、0で最初のステップ（未指定時と同じ）。initial_epochを上書きする",
     )
+    parser.add_argument(
+        "--http-log",
+        action="store_true",
+        help="log average loss using HTTP requests"
+    )
+    parser.add_argument(
+        "--http-log-endpoint",
+        type=str,
+        default=None,
+        help="endpoint for HTTP logging"
+    )
+    parser.add_argument(
+        "--http-log-name",
+        type=str,
+        default=None,
+        help="training run name for HTTP logging"
+    )
+    parser.add_argument(
+        "--http-log-token",
+        type=str,
+        default=None,
+        help="token to verify HTTP logs"
+    )
+    parser.add_argument(
+        "--http-log-every",
+        type=int,
+        default=100,
+        help="how often to send requests"
+    )
+
     # parser.add_argument("--loraplus_lr_ratio", default=None, type=float, help="LoRA+ learning rate ratio")
     # parser.add_argument("--loraplus_unet_lr_ratio", default=None, type=float, help="LoRA+ UNet learning rate ratio")
     # parser.add_argument("--loraplus_text_encoder_lr_ratio", default=None, type=float, help="LoRA+ text encoder learning rate ratio")
