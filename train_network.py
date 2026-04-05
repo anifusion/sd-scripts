@@ -46,6 +46,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+_http_session = None
+
+def _get_http_session():
+    global _http_session
+    if _http_session is None:
+        _http_session = requests.Session()
+        retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+        _http_session.mount("https://", HTTPAdapter(max_retries=retries))
+        _http_session.mount("http://", HTTPAdapter(max_retries=retries))
+    return _http_session
 
 
 class NetworkTrainer:
@@ -1066,21 +1079,24 @@ class NetworkTrainer:
                             "step": global_step
                         })
 
-                        if len(log_batch) % args.http_log_every == 0:
+                        if len(log_batch) >= args.http_log_every:
                             payload = {
                                 "name": args.http_log_name,
                                 "log_batch": log_batch
                             }
-                            headers = {
-                                "Authorization": f"Bearer {args.http_log_token}",
-                            }
+                            headers = {}
+                            if args.http_log_token:
+                                headers["Authorization"] = f"Bearer {args.http_log_token}"
 
-                            print("POST", args.http_log_endpoint)
                             try:
-                                requests.post(args.http_log_endpoint, json=payload, headers=headers, timeout=5)
-                            except:
-                                print("failed to POST training logs")
-                            log_batch = []
+                                session = _get_http_session()
+                                resp = session.post(args.http_log_endpoint, json=payload, headers=headers, timeout=10)
+                                resp.raise_for_status()
+                                log_batch = []
+                            except Exception as e:
+                                print(f"failed to POST training logs: {e}")
+                                if len(log_batch) > args.http_log_every * 10:
+                                    log_batch = log_batch[-args.http_log_every:]
 
                 if global_step >= args.max_train_steps:
                     break
