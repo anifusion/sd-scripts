@@ -1,6 +1,7 @@
 import importlib
 import argparse
 import math
+import numbers
 import os
 import sys
 import random
@@ -59,6 +60,20 @@ def _get_http_session():
         _http_session.mount("https://", HTTPAdapter(max_retries=retries))
         _http_session.mount("http://", HTTPAdapter(max_retries=retries))
     return _http_session
+
+
+def _json_safe_for_http_log(obj):
+    """Replace NaN/Inf so requests' JSON encoder succeeds (JSON has no NaN/Infinity)."""
+    if isinstance(obj, dict):
+        return {k: _json_safe_for_http_log(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe_for_http_log(v) for v in obj]
+    if isinstance(obj, bool):
+        return obj
+    if isinstance(obj, numbers.Real):
+        x = float(obj)
+        return None if not math.isfinite(x) else x
+    return obj
 
 
 class NetworkTrainer:
@@ -1090,7 +1105,12 @@ class NetworkTrainer:
 
                             try:
                                 session = _get_http_session()
-                                resp = session.post(args.http_log_endpoint, json=payload, headers=headers, timeout=10)
+                                resp = session.post(
+                                    args.http_log_endpoint,
+                                    json=_json_safe_for_http_log(payload),
+                                    headers=headers,
+                                    timeout=10,
+                                )
                                 resp.raise_for_status()
                                 log_batch = []
                             except Exception as e:
