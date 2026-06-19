@@ -26,8 +26,6 @@ Conv2d 3x3への拡大は [cloneofsimo氏](https://github.com/cloneofsimo/lora) 
 
 LoRA-LierLaに比べ、LoRA-C3Liarは適用される層が増える分、高い精度が期待できるかもしれません。
 
-また学習時は __DyLoRA__ を使用することもできます（後述します）。
-
 ## 学習したモデルに関する注意
 
 LoRA-LierLa は、AUTOMATIC1111氏のWeb UIのLoRA機能で使用することができます。
@@ -122,62 +120,6 @@ accelerate launch --num_cpu_threads_per_process 1 train_network.py
 ```
 --network_args "conv_dim=4"
 ```
-
-## DyLoRA
-
-DyLoRAはこちらの論文で提案されたものです。[DyLoRA: Parameter Efficient Tuning of Pre-trained Models using Dynamic Search-Free Low-Rank Adaptation](https://arxiv.org/abs/2210.07558)　公式実装は[こちら](https://github.com/huawei-noah/KD-NLP/tree/main/DyLoRA)です。
-
-論文によると、LoRAのrankは必ずしも高いほうが良いわけではなく、対象のモデル、データセット、タスクなどにより適切なrankを探す必要があるようです。DyLoRAを使うと、指定したdim(rank)以下のさまざまなrankで同時にLoRAを学習します。これにより最適なrankをそれぞれ学習して探す手間を省くことができます。
-
-当リポジトリの実装は公式実装をベースに独自の拡張を加えています（そのため不具合などあるかもしれません）。
-
-### 当リポジトリのDyLoRAの特徴
-
-学習後のDyLoRAのモデルファイルはLoRAと互換性があります。また、モデルファイルから指定したdim(rank)以下の複数のdimのLoRAを抽出できます。
-
-DyLoRA-LierLa、DyLoRA-C3Lierのどちらも学習できます。
-
-### DyLoRAで学習する
-
-`--network_module=networks.dylora` のように、DyLoRAに対応する`network.dylora`を指定してください。
-
-また `--network_args` に、たとえば`--network_args "unit=4"`のように`unit`を指定します。`unit`はrankを分割する単位です。たとえば`--network_dim=16 --network_args "unit=4"` のように指定します。`unit`は`network_dim`を割り切れる値（`network_dim`は`unit`の倍数）としてください。
-
-`unit`を指定しない場合は、`unit=1`として扱われます。
-
-記述例は以下です。
-
-```
---network_module=networks.dylora --network_dim=16 --network_args "unit=4"
-
---network_module=networks.dylora --network_dim=32 --network_alpha=16 --network_args "unit=4"
-```
-
-DyLoRA-C3Lierの場合は、`--network_args` に`"conv_dim=4"`のように`conv_dim`を指定します。通常のLoRAと異なり、`conv_dim`は`network_dim`と同じ値である必要があります。記述例は以下です。
-
-```
---network_module=networks.dylora --network_dim=16 --network_args "conv_dim=16" "unit=4"
-
---network_module=networks.dylora --network_dim=32 --network_alpha=16 --network_args "conv_dim=32" "conv_alpha=16" "unit=8"
-```
-
-たとえばdim=16、unit=4（後述）で学習すると、4、8、12、16の4つのrankのLoRAを学習、抽出できます。抽出した各モデルで画像を生成し、比較することで、最適なrankのLoRAを選択できます。
-
-その他のオプションは通常のLoRAと同じです。
-
-※ `unit`は当リポジトリの独自拡張で、DyLoRAでは同dim(rank)の通常LoRAに比べると学習時間が長くなることが予想されるため、分割単位を大きくしたものです。
-
-### DyLoRAのモデルからLoRAモデルを抽出する
-
-`networks`フォルダ内の `extract_lora_from_dylora.py`を使用します。指定した`unit`単位で、DyLoRAのモデルからLoRAのモデルを抽出します。
-
-コマンドラインはたとえば以下のようになります。
-
-```powershell
-python networks\extract_lora_from_dylora.py --model "foldername/dylora-model.safetensors" --save_to "foldername/dylora-model-split.safetensors" --unit 4
-```
-
-`--model` にはDyLoRAのモデルファイルを指定します。`--save_to` には抽出したモデルを保存するファイル名を指定します（rankの数値がファイル名に付加されます）。`--unit` にはDyLoRAの学習時の`unit`を指定します。
 
 ## 階層別学習率
 

@@ -26,8 +26,6 @@ Conv2d 3x3的扩展最初是由 [cloneofsimo先生的代码仓库](https://githu
 
 与 LoRA-LierLa 相比，LoRA-C3Lier 可能会获得更高的准确性，因为它适用于更多的层。
 
-在训练时，也可以使用 __DyLoRA__（将在后面介绍）。
-
 ## 请注意与所学模型相关的事项。
 
 LoRA-LierLa可以用于AUTOMATIC1111先生的Web UI LoRA功能。
@@ -115,61 +113,6 @@ LoRA的模型将会被保存在通过`--output_dir`选项指定的文件夹中�
 ```
 --network_args "conv_dim=4"
 ```
-
-DyLoRA是在这篇论文中提出的[DyLoRA: Parameter Efficient Tuning of Pre-trained Models using Dynamic Search-Free Low-Rank Adaptation](​https://arxiv.org/abs/2210.07558)，
-[其官方实现可在这里找到](​https://github.com/huawei-noah/KD-NLP/tree/main/DyLoRA)。
-
-根据论文，LoRA的rank并不是越高越好，而是需要根据模型、数据集、任务等因素来寻找合适的rank。使用DyLoRA，可以同时在指定的维度(rank)下学习多种rank的LoRA，从而省去了寻找最佳rank的麻烦。
-
-本存储库的实现基于官方实现进行了自定义扩展（因此可能存在缺陷）。
-
-### 本存储库DyLoRA的特点
-
-DyLoRA训练后的模型文件与LoRA兼容。此外，可以从模型文件中提取多个低于指定维度(rank)的LoRA。
-
-DyLoRA-LierLa和DyLoRA-C3Lier均可训练。
-
-### 使用DyLoRA进行训练
-
-请指定与DyLoRA相对应的`network.dylora`，例如 `--network_module=networks.dylora`。
-
-此外，通过 `--network_args` 指定例如`--network_args "unit=4"`的参数。`unit`是划分rank的单位。例如，可以指定为`--network_dim=16 --network_args "unit=4"`。请将`unit`视为可以被`network_dim`整除的值（`network_dim`是`unit`的倍数）。
-
-如果未指定`unit`，则默认为`unit=1`。
-
-以下是示例说明。
-
-```
---network_module=networks.dylora --network_dim=16 --network_args "unit=4"
-
---network_module=networks.dylora --network_dim=32 --network_alpha=16 --network_args "unit=4"
-```
-
-对于DyLoRA-C3Lier，需要在 `--network_args` 中指定 `conv_dim`，例如 `conv_dim=4`。与普通的LoRA不同，`conv_dim`必须与`network_dim`具有相同的值。以下是一个示例描述：
-
-```
---network_module=networks.dylora --network_dim=16 --network_args "conv_dim=16" "unit=4"
-
---network_module=networks.dylora --network_dim=32 --network_alpha=16 --network_args "conv_dim=32" "conv_alpha=16" "unit=8"
-```
-
-例如，当使用dim=16、unit=4（如下所述）进行学习时，可以学习和提取4个rank的LoRA，即4、8、12和16。通过在每个提取的模型中生成图像并进行比较，可以选择最佳rank的LoRA。
-
-其他选项与普通的LoRA相同。
-
-*`unit`是本存储库的独有扩展，在DyLoRA中，由于预计相比同维度（rank）的普通LoRA，学习时间更长，因此将分割单位增加。
-
-### 从DyLoRA模型中提取LoRA模型
-
-请使用`networks`文件夹中的`extract_lora_from_dylora.py`。指定`unit`单位后，从DyLoRA模型中提取LoRA模型。
-
-例如，命令行如下：
-
-```powershell
-python networks\extract_lora_from_dylora.py --model "foldername/dylora-model.safetensors" --save_to "foldername/dylora-model-split.safetensors" --unit 4
-```
-
-`--model` 参数用于指定DyLoRA模型文件。`--save_to` 参数用于指定要保存提取的模型的文件名（rank值将附加到文件名中）。`--unit` 参数用于指定DyLoRA训练时的`unit`。 
 
 ## 分层学习率
 
