@@ -79,23 +79,19 @@ def _post_http_log_batch(args, log_batch):
     if args.http_log_token:
         headers["Authorization"] = f"Bearer {args.http_log_token}"
 
-    session = _get_http_session()
-    for attempt in range(3):
-        try:
-            resp = session.post(
-                args.http_log_endpoint,
-                json=_json_safe_for_http_log(payload),
-                headers=headers,
-                timeout=10,
-            )
-            resp.raise_for_status()
-            return True
-        except Exception as e:
-            if attempt >= 2:
-                print(f"failed to POST training logs: {e}")
-                return False
-            time.sleep(2**attempt)
-    return False
+    try:
+        session = _get_http_session()
+        resp = session.post(
+            args.http_log_endpoint,
+            json=_json_safe_for_http_log(payload),
+            headers=headers,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return True
+    except Exception as e:
+        print(f"failed to POST training logs: {e}")
+        return False
 
 
 def _json_safe_for_http_log(obj):
@@ -1124,7 +1120,7 @@ class NetworkTrainer:
                         args, current_loss, avr_loss, lr_scheduler, lr_descriptions, keys_scaled, mean_norm, maximum_norm
                     )
                     accelerator.log(logs, step=global_step)
-                    if args.http_log:
+                    if args.http_log and is_main_process:
                         log_batch.append({
                             "logs": logs,
                             "step": global_step
