@@ -56,10 +56,46 @@ def _get_http_session():
     global _http_session
     if _http_session is None:
         _http_session = requests.Session()
-        retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+        retries = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=frozenset(["POST", "GET", "HEAD"]),
+        )
         _http_session.mount("https://", HTTPAdapter(max_retries=retries))
         _http_session.mount("http://", HTTPAdapter(max_retries=retries))
     return _http_session
+
+
+def _post_http_log_batch(args, log_batch):
+    """POST a loss batch to the remote log endpoint. Returns True on success."""
+    if not log_batch:
+        return True
+    payload = {
+        "name": args.http_log_name,
+        "log_batch": log_batch,
+    }
+    headers = {}
+    if args.http_log_token:
+        headers["Authorization"] = f"Bearer {args.http_log_token}"
+
+    session = _get_http_session()
+    for attempt in range(3):
+        try:
+            resp = session.post(
+                args.http_log_endpoint,
+                json=_json_safe_for_http_log(payload),
+                headers=headers,
+                timeout=10,
+            )
+            resp.raise_for_status()
+            return True
+        except Exception as e:
+            if attempt >= 2:
+                print(f"failed to POST training logs: {e}")
+                return False
+            time.sleep(2**attempt)
+    return False
 
 
 def _json_safe_for_http_log(obj):
@@ -1095,28 +1131,10 @@ class NetworkTrainer:
                         })
 
                         if len(log_batch) >= args.http_log_every:
-                            payload = {
-                                "name": args.http_log_name,
-                                "log_batch": log_batch
-                            }
-                            headers = {}
-                            if args.http_log_token:
-                                headers["Authorization"] = f"Bearer {args.http_log_token}"
-
-                            try:
-                                session = _get_http_session()
-                                resp = session.post(
-                                    args.http_log_endpoint,
-                                    json=_json_safe_for_http_log(payload),
-                                    headers=headers,
-                                    timeout=10,
-                                )
-                                resp.raise_for_status()
+                            if _post_http_log_batch(args, log_batch):
                                 log_batch = []
-                            except Exception as e:
-                                print(f"failed to POST training logs: {e}")
-                                if len(log_batch) > args.http_log_every * 10:
-                                    log_batch = log_batch[-args.http_log_every:]
+                            elif len(log_batch) > args.http_log_every * 10:
+                                log_batch = log_batch[-args.http_log_every :]
 
                 if global_step >= args.max_train_steps:
                     break
@@ -1145,6 +1163,10 @@ class NetworkTrainer:
             self.sample_images(accelerator, args, epoch + 1, global_step, accelerator.device, vae, tokenizer, text_encoder, unet)
 
             # end of epoch
+
+        if is_main_process and args.http_log and log_batch:
+            if _post_http_log_batch(args, log_batch):
+                log_batch = []
 
         # metadata["ss_epoch"] = str(num_train_epochs)
         metadata["ss_training_finished_at"] = str(time.time())
