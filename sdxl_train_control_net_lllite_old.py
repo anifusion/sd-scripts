@@ -47,7 +47,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# TODO 他のスクリプトと共通化する
+# TODO[P2](training): Share with other training scripts.
 def generate_step_logs(args: argparse.Namespace, current_loss, avr_loss, lr_scheduler):
     logs = {
         "loss/current": current_loss,
@@ -296,7 +296,7 @@ def train(args):
         args.save_every_n_epochs = math.floor(num_train_epochs / args.save_n_epoch_ratio) or 1
 
     # 学習する
-    # TODO: find a way to handle total batch size when there are multiple datasets
+    # TODO[P2](training): Find a way to handle total batch size when there are multiple datasets.
     accelerator.print("running training / 学習開始")
     accelerator.print(f"  num train images * repeats / 学習画像の数×繰り返し回数: {train_dataset_group.num_train_images}")
     accelerator.print(f"  num reg images / 正則化画像の数: {train_dataset_group.num_reg_images}")
@@ -408,7 +408,8 @@ def train(args):
                 # with noise offset and/or multires noise if specified
                 noise, noisy_latents, timesteps, huber_c = train_util.get_noise_noisy_latents_and_timesteps(args, noise_scheduler, latents)
 
-                noisy_latents = noisy_latents.to(weight_dtype)  # TODO check why noisy_latents is not weight_dtype
+                # TODO[P2](training): Check why noisy_latents is not weight_dtype.
+                noisy_latents = noisy_latents.to(weight_dtype)
 
                 controlnet_image = batch["conditioning_images"].to(dtype=weight_dtype)
 

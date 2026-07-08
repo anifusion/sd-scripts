@@ -409,7 +409,7 @@ def get_weighted_text_embeddings(
         uncond_weights = torch.tensor(uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.device)
 
     # assign weights to the prompts and normalize in the sense of mean
-    # TODO: should we normalize by chunk or in a whole (current implementation)?
+    # TODO[P2](training): Decide whether to normalize by chunk or as a whole (current implementation normalizes as a whole).
     if (not skip_parsing) and (not skip_weighting):
         previous_mean = text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
         text_embeddings *= prompt_weights.unsqueeze(-1)
@@ -966,7 +966,8 @@ class SdxlStableDiffusionLongPromptWeightingPipeline:
             latents,
         )
 
-        # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
+        # 7. Prepare extra step kwargs.
+        # TODO[P2](training): Move extra step kwargs logic out of the pipeline.
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         # create size embs and concat embeddings for SDXL

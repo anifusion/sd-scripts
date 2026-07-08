@@ -266,7 +266,7 @@ def merge(args):
                 is_stable_diffusion_ckpt=True,
             )
             if args.v2:
-                # TODO read sai modelspec
+                # TODO[P2](training): Read sai modelspec metadata.
                 logger.warning(
                     "Cannot determine if model is for v-prediction, so save metadata as v-prediction / modelがv-prediction用か否か不明なため、仮にv-prediction用としてmetadataを保存します"
                 )
@@ -291,7 +291,7 @@ def merge(args):
                 state_dict, v2, v2, False, True, False, time.time(), title=title, merged_from=merged_from
             )
             if v2:
-                # TODO read sai modelspec
+                # TODO[P2](training): Read sai modelspec metadata.
                 logger.warning(
                     "Cannot determine if LoRA is for v-prediction, so save metadata as v-prediction / LoRAがv-prediction用か否か不明なため、仮にv-prediction用としてmetadataを保存します"
                 )

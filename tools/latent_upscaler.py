@@ -262,7 +262,8 @@ def create_upscaler(**kwargs):
 # another interface: upscale images with a model for given images from command line
 def upscale_images(args: argparse.Namespace):
     DEVICE = get_preferred_device()
-    us_dtype = torch.float16  # TODO: support fp32/bf16
+    # TODO[P2](training): Support fp32 and bf16 dtypes.
+    us_dtype = torch.float16
     os.makedirs(args.output_dir, exist_ok=True)
 
     # load VAE with Diffusers

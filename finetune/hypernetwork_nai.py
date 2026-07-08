@@ -60,7 +60,8 @@ class Hypernetwork(torch.nn.Module):
                   attn.hypernetwork = self
                 else:
                   attn.hypernetwork = None
-    return True       # TODO error checking
+    # TODO[P1](training): Add error checking.
+    return True
 
   def forward(self, x, context):
     size = context.shape[-1]

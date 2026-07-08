@@ -277,7 +277,7 @@ def train(args):
     train_text_encoder2 = False
 
     if args.train_text_encoder:
-        # TODO each option for two text encoders?
+        # TODO[P2](training): Support separate options for two text encoders.
         accelerator.print("enable text encoder training")
         if args.gradient_checkpointing:
             text_encoder1.gradient_checkpointing_enable()
@@ -633,7 +633,7 @@ def train(args):
                     input_ids2 = batch["input_ids2"]
                     with torch.set_grad_enabled(args.train_text_encoder):
                         # Get the text embedding for conditioning
-                        # TODO support weighted captions
+                        # TODO[P2](training): Support weighted captions.
                         # if args.weighted_captions:
                         #     encoder_hidden_states = get_weighted_text_embeddings(
                         #         tokenizer,
@@ -696,7 +696,8 @@ def train(args):
                     args, noise_scheduler, latents
                 )
 
-                noisy_latents = noisy_latents.to(weight_dtype)  # TODO check why noisy_latents is not weight_dtype
+                # TODO[P2](training): Check why noisy_latents is not weight_dtype.
+                noisy_latents = noisy_latents.to(weight_dtype)
 
                 # Predict the noise residual
                 with accelerator.autocast():

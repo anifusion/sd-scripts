@@ -343,7 +343,7 @@ class OFTNetwork(torch.nn.Module):
     def is_mergeable(self):
         return True
 
-    # TODO refactor to common function with apply_to
+    # TODO[P2](training): Refactor to common function with apply_to.
     def merge_to(self, text_encoder, unet, weights_sd, dtype, device):
         logger.info("enable OFT for U-Net")
 

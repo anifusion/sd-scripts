@@ -44,7 +44,7 @@ def save_to_file(file_name, model, metadata):
 
 def detect_method_from_training_model(models, dtype):
     for model in models:
-        # TODO It is better to use key names to detect the method
+        # TODO[P2](training): Detect merge method from key names instead of heuristics.
         lora_sd, _ = load_state_dict(model, dtype)
         for key in tqdm(lora_sd.keys()):
             if "lora_up" in key or "lora_down" in key:
@@ -228,7 +228,7 @@ def merge_to_sd_model(text_encoder1, text_encoder2, unet, models, ratios, lbws, 
 
                 module.weight = torch.nn.Parameter(weight)
 
-            # TODO multi-threading may cause OOM on CPU if cpu_count is too high and RAM is not enough
+            # TODO[P2](training): Multi-threading may cause CPU OOM when cpu_count is high and RAM is limited.
             max_workers = 1 if device.type != "cpu" else None  # avoid OOM on GPU
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 list(tqdm(executor.map(merge_to, lora_sd.keys()), total=len(lora_sd.keys())))

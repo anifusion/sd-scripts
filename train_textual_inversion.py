@@ -451,7 +451,7 @@ class TextualInversionTrainer:
         unet.requires_grad_(False)
         unet.to(accelerator.device, dtype=weight_dtype)
         if args.gradient_checkpointing:  # according to TI example in Diffusers, train is required
-            # TODO U-Netをオリジナルに置き換えたのでいらないはずなので、後で確認して消す
+            # TODO[P2](training): Verify and remove dead code after replacing U-Net with original implementation.
             unet.train()
         else:
             unet.eval()

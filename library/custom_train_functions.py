@@ -107,7 +107,7 @@ def apply_debiased_estimation(loss, timesteps, noise_scheduler, v_prediction=Fal
     return loss
 
 
-# TODO train_utilと分散しているのでどちらかに寄せる
+# TODO[P2](training): Consolidate duplicated logic with train_util.
 
 
 def add_custom_train_arguments(parser: argparse.ArgumentParser, support_weighted_captions: bool = True):

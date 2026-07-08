@@ -1,7 +1,7 @@
 """
 extract factors the build is dependent on:
 [X] compute capability
-    [ ] TODO: Q - What if we have multiple GPUs of different makes?
+    - TODO[P2](training): Handle multiple GPUs with different makes.
 - CUDA version
 - Software:
     - CPU-only: only CPU quantization functions (no optimizer, no matrix multiple)
@@ -33,7 +33,7 @@ def get_cuda_version(cuda, cudart_path):
     try:
         cudart = ctypes.CDLL(cudart_path)
     except OSError:
-        # TODO: shouldn't we error or at least warn here?
+        # TODO[P2](training): Error or warn when libcudart.so cannot be loaded.
         print(f'ERROR: libcudart.so could not be read from path: {cudart_path}!')
         return None
 
@@ -54,7 +54,7 @@ def get_cuda_lib_handle():
     try:
         cuda = ctypes.CDLL("libcuda.so")
     except OSError:
-        # TODO: shouldn't we error or at least warn here?
+        # TODO[P2](training): Error or warn when libcudart.so cannot be loaded.
         print('CUDA SETUP: WARNING! libcuda.so not found! Do you have a CUDA driver installed? If you are on a cluster, make sure you are on a CUDA machine!')
         return None
     check_cuda_result(cuda, cuda.cuInit(0))
@@ -95,7 +95,7 @@ def get_compute_capabilities(cuda):
     return ccs
 
 
-# def get_compute_capability()-> Union[List[str, ...], None]: # FIXME: error
+# def get_compute_capability()-> Union[List[str, ...], None]:  # TODO[P1](training): Fix type annotation error in get_compute_capability.
 def get_compute_capability(cuda):
     """
     Extracts the highest compute capbility from all available GPUs, as compute
@@ -104,7 +104,7 @@ def get_compute_capability(cuda):
     """
     ccs = get_compute_capabilities(cuda)
     if ccs is not None:
-        # TODO: handle different compute capabilities; for now, take the max
+        # TODO[P2](training): Handle different compute capabilities; for now, take the max.
         return ccs[-1]
     return None
 
@@ -145,9 +145,7 @@ def evaluate_cuda_setup():
     # 7.5 is the minimum CC vor cublaslt
     has_cublaslt = cc in ["7.5", "8.0", "8.6"]
 
-    # TODO:
-    # (1) CUDA missing cases (no CUDA installed by CUDA driver (nvidia-smi accessible)
-    # (2) Multiple CUDA versions installed
+    # TODO[P2](training): Handle CUDA missing cases and multiple CUDA versions installed.
 
     # we use ls -l instead of nvcc to determine the cuda version
     # since most installations will have the libcudart.so installed, but not the compiler

@@ -95,7 +95,7 @@ def load_control_net(v2, unet, model):
     logger.info(f"ControlNet: loading Control U-Net: {info}")
 
     # U-Net以外のControlNetを作成する
-    # TODO support middle only
+    # TODO[P2](training): Support middle block only.
     ctrl_net = ControlNet()
     info = ctrl_net.load_state_dict(zero_conv_sd)
     logger.info("ControlNet: loading ControlNet: {info}")
@@ -254,7 +254,7 @@ def unet_forward(
     # 1. time
     timesteps = timestep
     if not torch.is_tensor(timesteps):
-        # TODO: this requires sync between CPU and GPU. So try to pass timesteps as tensors if you can
+        # TODO[P3](training): Avoid CPU-GPU sync; pass timesteps as tensors when possible.
         # This would be a good case for the `match` statement (Python 3.10+)
         is_mps = sample.device.type == "mps"
         if isinstance(timestep, float):

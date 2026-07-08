@@ -99,7 +99,7 @@ class SdxlNetworkTrainer(train_network.NetworkTrainer):
             input_ids2 = batch["input_ids2"]
             with torch.enable_grad():
                 # Get the text embedding for conditioning
-                # TODO support weighted captions
+                # TODO[P2](training): Support weighted captions.
                 # if args.weighted_captions:
                 #     encoder_hidden_states = get_weighted_text_embeddings(
                 #         tokenizer,
@@ -148,7 +148,8 @@ class SdxlNetworkTrainer(train_network.NetworkTrainer):
         return encoder_hidden_states1, encoder_hidden_states2, pool2
 
     def call_unet(self, args, accelerator, unet, noisy_latents, timesteps, text_conds, batch, weight_dtype):
-        noisy_latents = noisy_latents.to(weight_dtype)  # TODO check why noisy_latents is not weight_dtype
+        # TODO[P2](training): Check why noisy_latents is not weight_dtype.
+        noisy_latents = noisy_latents.to(weight_dtype)
 
         # get size embeddings
         orig_size = batch["original_sizes_hw"]

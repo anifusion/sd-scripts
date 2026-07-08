@@ -1,5 +1,5 @@
 # DreamBooth training
-# XXX dropped option: fine_tune
+# TODO[P3](training): Document or remove dropped option: fine_tune.
 
 import argparse
 import itertools
@@ -213,7 +213,8 @@ def train(args):
     if args.stop_text_encoder_training is None:
         args.stop_text_encoder_training = args.max_train_steps + 1  # do not stop until end
 
-    # lr schedulerを用意する TODO gradient_accumulation_stepsの扱いが何かおかしいかもしれない。後で確認する
+    # lr schedulerを用意する
+    # TODO[P1](training): Review gradient_accumulation_steps handling; it may be incorrect.
     lr_scheduler = train_util.get_scheduler_fix(args, optimizer, accelerator.num_processes)
 
     # 実験的機能：勾配も含めたfp16学習を行う　モデル全体をfp16にする

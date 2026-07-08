@@ -1098,7 +1098,7 @@ class LoRANetwork(torch.nn.Module):
     def is_mergeable(self):
         return True
 
-    # TODO refactor to common function with apply_to
+    # TODO[P2](training): Refactor to common function with apply_to.
     def merge_to(self, text_encoder, unet, weights_sd, dtype, device):
         apply_text_encoder = apply_unet = False
         for key in weights_sd.keys():
@@ -1146,7 +1146,7 @@ class LoRANetwork(torch.nn.Module):
 
     # 二つのText Encoderに別々の学習率を設定できるようにするといいかも
     def prepare_optimizer_params(self, text_encoder_lr, unet_lr, default_lr):
-        # TODO warn if optimizer is not compatible with LoRA+ (but it will cause error so we don't need to check it here?)
+        # TODO[P3](training): Warn if optimizer is not compatible with LoRA+.
         # if (
         #     self.loraplus_lr_ratio is not None
         #     or self.loraplus_text_encoder_lr_ratio is not None

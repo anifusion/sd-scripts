@@ -1486,13 +1486,14 @@ class BaseDataset(torch.utils.data.Dataset):
                 random_crop = subset.random_crop
                 bucket_reso = image_info.bucket_reso
             else:
-                # TODO そもそも混在してても動くようにしたほうがいい
+                # TODO[P2](training): Support mixed caption file extensions without errors.
                 assert flip_aug == subset.flip_aug, "flip_aug must be same in a batch"
                 assert alpha_mask == subset.alpha_mask, "alpha_mask must be same in a batch"
                 assert random_crop == subset.random_crop, "random_crop must be same in a batch"
                 assert bucket_reso == image_info.bucket_reso, "bucket_reso must be same in a batch"
 
-            caption = image_info.caption  # TODO cache some patterns of dropping, shuffling, etc.
+            # TODO[P2](training): Cache some patterns of dropping, shuffling, etc.
+            caption = image_info.caption
 
             if self.caching_mode == "latents":
                 image = load_image(image_info.absolute_path)
@@ -1863,7 +1864,7 @@ class FineTuningDataset(BaseDataset):
 
             self.num_train_images += len(metadata) * subset.num_repeats
 
-            # TODO do not record tag freq when no tag
+            # TODO[P2](training): Do not record tag frequency when no tag is present.
             self.set_tag_frequency(os.path.basename(subset.metadata_file), tags_list)
             subset.img_count = len(metadata)
             self.subsets.append(subset)
@@ -2134,7 +2135,7 @@ class ControlNetDataset(BaseDataset):
                     cond_img, image_info.resized_size, interpolation=cv2.INTER_AREA
                 )  # INTER_AREAでやりたいのでcv2でリサイズ
 
-                # TODO support random crop
+                # TODO[P2](training): Support random crop.
                 # 現在サポートしているcropはrandomではなく中央のみ
                 h, w = target_size_hw
                 ct = (cond_img.shape[0] - h) // 2
@@ -2171,7 +2172,7 @@ class DatasetGroup(torch.utils.data.ConcatDataset):
         self.num_reg_images = 0
 
         # simply concat together
-        # TODO: handling image_data key duplication among dataset
+        # TODO[P2](training): Handle image_data key duplication among datasets.
         #   In practical, this is not the big issue because image_data is accessed from outside of dataset only for debug_dataset.
         for dataset in datasets:
             self.image_data.update(dataset.image_data)
@@ -2552,7 +2553,7 @@ def cache_batch_latents(
     alpha_masks: List[np.ndarray] = []
     for info in image_infos:
         image = load_image(info.absolute_path, use_alpha_mask) if info.image is None else np.array(info.image, np.uint8)
-        # TODO 画像のメタデータが壊れていて、メタデータから割り当てたbucketと実際の画像サイズが一致しない場合があるのでチェック追加要
+        # TODO[P1](training): Add check when metadata bucket size does not match actual image size.
         image, original_size, crop_ltrb = trim_and_resize_if_required(random_crop, image, info.bucket_reso, info.resized_size)
 
         info.latents_original_size = original_size
@@ -3323,7 +3324,7 @@ def add_training_arguments(parser: argparse.ArgumentParser, support_dreambooth: 
     parser.add_argument("--full_fp16", action="store_true", help="fp16 training including gradients / 勾配も含めてfp16で学習する")
     parser.add_argument(
         "--full_bf16", action="store_true", help="bf16 training including gradients / 勾配も含めてbf16で学習する"
-    )  # TODO move to SDXL training, because it is not supported by SD1/2
+    )  # TODO[P2](training): Move to SDXL training; not supported by SD1/2.
     parser.add_argument("--fp8_base", action="store_true", help="use fp8 for base model / base modelにfp8を使う")
 
     parser.add_argument(
@@ -4338,7 +4339,8 @@ def get_optimizer(args, trainable_params):
                     has_group_lr = has_group_lr or (p is not None)
 
                 if has_group_lr:
-                    # 一応argsを無効にしておく TODO 依存関係が逆転してるのであまり望ましくない
+                    # 一応argsを無効にしておく
+                    # TODO[P2](training): Dependency direction is inverted; refactor argument handling.
                     logger.warning(f"unet_lr and text_encoder_lr are ignored / unet_lrとtext_encoder_lrは無視されます")
                     args.unet_lr = None
                     args.text_encoder_lr = None
@@ -4689,7 +4691,7 @@ def _load_target_model(args: argparse.Namespace, weight_dtype, device="cpu", une
         del pipe
 
         # Diffusers U-Net to original U-Net
-        # TODO *.ckpt/*.safetensorsのv2と同じ形式にここで変換すると良さそう
+        # TODO[P2](training): Convert to same format as v2 *.ckpt/*.safetensors here.
         # logger.info(f"unet config: {unet.config}")
         original_unet = UNet2DConditionModel(
             unet.config.sample_size,

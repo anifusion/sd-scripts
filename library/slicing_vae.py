@@ -505,7 +505,7 @@ class SlicingDecoder(nn.Module):
             x = x.to(org_device)
 
             # Cast to float32 to as 'upsample_nearest2d_out_frame' op does not support bfloat16
-            # TODO(Suraj): Remove this cast once the issue is fixed in PyTorch
+            # TODO[P3](training): Remove bfloat16 cast once upsample_nearest2d_out_frame supports bfloat16 in PyTorch. See https://github.com/pytorch/pytorch/issues/86679
             # https://github.com/pytorch/pytorch/issues/86679
             # PyTorch 2で直らないかね……
             if org_dtype == torch.bfloat16:

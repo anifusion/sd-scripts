@@ -996,7 +996,7 @@ def load_checkpoint_with_text_encoder_conversion(ckpt_path, device="cpu"):
     return checkpoint, state_dict
 
 
-# TODO dtype指定の動作が怪しいので確認する text_encoderを指定形式で作れるか未確認
+# TODO[P1](training): Verify dtype handling; confirm text_encoder can be created in the specified format.
 def load_models_from_stable_diffusion_checkpoint(v2, ckpt_path, device="cpu", dtype=None, unet_use_linear_projection_in_v2=True):
     _, state_dict = load_checkpoint_with_text_encoder_conversion(ckpt_path, device)
 
@@ -1222,7 +1222,7 @@ def save_stable_diffusion_checkpoint(
     new_ckpt["global_step"] = steps
 
     if is_safetensors(output_file):
-        # TODO Tensor以外のdictの値を削除したほうがいいか
+        # TODO[P2](training): Consider removing non-Tensor values from dict.
         save_file(state_dict, output_file, metadata)
     else:
         torch.save(new_ckpt, output_file)
@@ -1244,7 +1244,7 @@ def save_diffusers_checkpoint(v2, output_dir, text_encoder, unet, pretrained_mod
         vae = AutoencoderKL.from_pretrained(pretrained_model_name_or_path, subfolder="vae")
 
     # original U-Net cannot be saved, so we need to convert it to the Diffusers version
-    # TODO this consumes a lot of memory
+    # TODO[P2](training): Reduce memory consumption in this path.
     diffusers_unet = diffusers.UNet2DConditionModel.from_pretrained(pretrained_model_name_or_path, subfolder="unet")
     diffusers_unet.load_state_dict(unet.state_dict())
 

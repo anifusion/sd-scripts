@@ -163,7 +163,7 @@ def replace_unet_modules(unet: diffusers.models.unet_2d_condition.UNet2DConditio
         unet.set_use_sdpa(True)
 
 
-# TODO common train_util.py
+# TODO[P2](training): Share common code with train_util.py.
 def replace_vae_modules(vae: diffusers.models.AutoencoderKL, mem_eff_attn, xformers, sdpa):
     if mem_eff_attn:
         replace_vae_attn_to_memory_efficient()
@@ -781,7 +781,7 @@ class PipelineLike:
         if self.clip_guidance_scale > 0:
             clip_text_input = prompt_tokens
             if clip_text_input.shape[1] > self.tokenizer.model_max_length:
-                # TODO 75文字を超えたら警告を出す？
+                # TODO[P3](training): Warn when prompt exceeds 75 characters.
                 logger.info(f"trim text input {clip_text_input.shape}")
                 clip_text_input = torch.cat(
                     [clip_text_input[:, : self.tokenizer.model_max_length - 1], clip_text_input[:, -1].unsqueeze(1)], dim=1
@@ -2003,7 +2003,7 @@ def get_weighted_text_embeddings(
         uncond_weights = torch.tensor(uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.device)
 
     # assign weights to the prompts and normalize in the sense of mean
-    # TODO: should we normalize by chunk or in a whole (current implementation)?
+    # TODO[P2](training): Decide whether to normalize by chunk or as a whole (current implementation normalizes as a whole).
     # →全体でいいんじゃないかな
     if (not skip_parsing) and (not skip_weighting):
         previous_mean = text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
@@ -2443,7 +2443,7 @@ def main(args):
             net_kwargs = {}
             if args.network_args and i < len(args.network_args):
                 network_args = args.network_args[i]
-                # TODO escape special chars
+                # TODO[P3](training): Escape special characters in prompt.
                 network_args = network_args.split(";")
                 for net_arg in network_args:
                     key, value = net_arg.split("=")
@@ -3048,7 +3048,7 @@ def main(args):
 
             # ControlNet使用時はguide imageをリサイズする
             if control_nets:
-                # TODO resampleのメソッド
+                # TODO[P2](training): Implement resample method.
                 guide_images = guide_images if type(guide_images) == list else [guide_images]
                 guide_images = [i.resize((width, height), resample=PIL.Image.LANCZOS) for i in guide_images]
                 if len(guide_images) == 1:

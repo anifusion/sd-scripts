@@ -113,7 +113,7 @@ class NetworkTrainer:
         self.vae_scale_factor = 0.18215
         self.is_sdxl = False
 
-    # TODO 他のスクリプトと共通化する
+    # TODO[P2](training): Share with other training scripts.
     def generate_step_logs(
         self,
         args: argparse.Namespace,
@@ -385,7 +385,7 @@ class NetworkTrainer:
         network.apply_to(text_encoder, unet, train_text_encoder, train_unet)
 
         if args.network_weights is not None:
-            # FIXME consider alpha of weights
+            # TODO[P1](training): Consider alpha of weights.
             info = network.load_weights(args.network_weights)
             accelerator.print(f"load network weights from {args.network_weights}: {info}")
 
@@ -607,7 +607,7 @@ class NetworkTrainer:
             args.save_every_n_epochs = math.floor(num_train_epochs / args.save_n_epoch_ratio) or 1
 
         # 学習する
-        # TODO: find a way to handle total batch size when there are multiple datasets
+        # TODO[P2](training): Find a way to handle total batch size when there are multiple datasets.
         total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
         accelerator.print("running training / 学習開始")
@@ -622,7 +622,7 @@ class NetworkTrainer:
         accelerator.print(f"  gradient accumulation steps / 勾配を合計するステップ数 = {args.gradient_accumulation_steps}")
         accelerator.print(f"  total optimization steps / 学習ステップ数: {args.max_train_steps}")
 
-        # TODO refactor metadata creation and move to util
+        # TODO[P2](training): Refactor metadata creation and move to util.
         metadata = {
             "ss_session_id": session_id,  # random integer indicating which group of epochs the model came from
             "ss_training_started_at": training_started_at,  # unix timestamp
@@ -736,7 +736,7 @@ class NetworkTrainer:
                     subsets_metadata.append(subset_metadata)
 
                     # merge dataset dir: not reg subset only
-                    # TODO update additional-network extension to show detailed dataset config from metadata
+                    # TODO[P3](training): Update additional-network extension to show detailed dataset config from metadata.
                     if image_dir_or_metadata_file is not None:
                         # datasets may have a certain dir multiple times
                         v = image_dir_or_metadata_file

@@ -54,7 +54,7 @@ def add_config_arguments(parser: argparse.ArgumentParser):
     )
 
 
-# TODO: inherit Params class in Subset, Dataset
+# TODO[P2](training): Inherit Params class in Subset and Dataset.
 
 
 @dataclass
@@ -369,7 +369,7 @@ class ConfigSanitizer:
         try:
             return self.user_config_validator(user_config)
         except MultipleInvalid:
-            # TODO: エラー発生時のメッセージをわかりやすくする
+            # TODO[P3](training): Improve error messages on validation failure.
             logger.error("Invalid user config / ユーザ設定の形式が正しくないようです")
             raise
 
@@ -379,7 +379,7 @@ class ConfigSanitizer:
         try:
             return self.argparse_config_validator(argparse_namespace)
         except MultipleInvalid:
-            # XXX: this should be a bug
+            # TODO[P1](training): Investigate invalid cmdline parse result; likely a program bug.
             logger.error(
                 "Invalid cmdline parsed arguments. This should be a bug. / コマンドラインのパース結果が正しくないようです。プログラムのバグの可能性が高いです。"
             )

@@ -509,7 +509,7 @@ def train(args):
             if accelerator.sync_gradients:
                 progress_bar.update(1)
                 global_step += 1
-                # TODO: fix sample_images
+                # TODO[P1](training): Fix sample_images.
                 # train_util.sample_images(
                 #     accelerator, args, None, global_step, accelerator.device, vae, tokenizer, text_encoder, unet, prompt_replacement
                 # )
@@ -578,7 +578,7 @@ def train(args):
                 if args.save_state:
                     train_util.save_and_remove_state_on_epoch_end(args, accelerator, epoch + 1)
 
-        # TODO: fix sample_images
+        # TODO[P1](training): Fix sample_images.
         # train_util.sample_images(
         #     accelerator, args, epoch + 1, global_step, accelerator.device, vae, tokenizer, text_encoder, unet, prompt_replacement
         # )

@@ -486,7 +486,7 @@ class CrossAttention(nn.Module):
         hidden_states = self.reshape_batch_dim_to_heads(hidden_states)
         return hidden_states
 
-    # TODO support Hypernetworks
+    # TODO[P2](training): Support Hypernetworks.
     def forward_memory_efficient_xformers(self, x, context=None, mask=None):
         import xformers.ops
 
@@ -775,7 +775,7 @@ class Upsample2D(nn.Module):
         assert hidden_states.shape[1] == self.channels
 
         # Cast to float32 to as 'upsample_nearest2d_out_frame' op does not support bfloat16
-        # TODO(Suraj): Remove this cast once the issue is fixed in PyTorch
+        # TODO[P3](training): Remove bfloat16 cast once upsample_nearest2d_out_frame supports bfloat16 in PyTorch. See https://github.com/pytorch/pytorch/issues/86679
         # https://github.com/pytorch/pytorch/issues/86679
         dtype = hidden_states.dtype
         if dtype == torch.bfloat16:

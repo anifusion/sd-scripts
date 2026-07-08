@@ -65,7 +65,8 @@ class SdxlTextualInversionTrainer(train_textual_inversion.TextualInversionTraine
         return encoder_hidden_states1, encoder_hidden_states2, pool2
 
     def call_unet(self, args, accelerator, unet, noisy_latents, timesteps, text_conds, batch, weight_dtype):
-        noisy_latents = noisy_latents.to(weight_dtype)  # TODO check why noisy_latents is not weight_dtype
+        # TODO[P2](training): Check why noisy_latents is not weight_dtype.
+        noisy_latents = noisy_latents.to(weight_dtype)
 
         # get size embeddings
         orig_size = batch["original_sizes_hw"]

@@ -101,7 +101,7 @@ def pil_resize(image, size, interpolation=Image.LANCZOS):
     return resized_cv2
 
 
-# TODO make inf_utils.py
+# TODO[P2](training): Create inf_utils.py module.
 
 
 # region Gradual Latent hires fix

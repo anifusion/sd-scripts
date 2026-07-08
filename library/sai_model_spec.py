@@ -119,7 +119,7 @@ def build_metadata(
     metadata = {}
     metadata.update(BASE_METADATA)
 
-    # TODO メモリを消費せずかつ正しいハッシュ計算の方法がわかったら実装する
+    # TODO[P2](training): Implement correct hash calculation without excessive memory use.
     # if state_dict is not None:
     # hash = precalculate_safetensors_hashes(state_dict)
     # metadata["modelspec.hash_sha256"] = hash

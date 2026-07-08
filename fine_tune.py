@@ -1,5 +1,5 @@
 # training with captions
-# XXX dropped option: hypernetwork training
+# TODO[P3](training): Document or remove dropped option: hypernetwork training.
 
 import argparse
 import math
