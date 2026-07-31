@@ -556,7 +556,7 @@ class SlicingAutoencoderKL(ModelMixin, ConfigMixin):
             obj:`(64,)`): Tuple of block output channels.
         act_fn (`str`, *optional*, defaults to `"silu"`): The activation function to use.
         latent_channels (`int`, *optional*, defaults to `4`): Number of channels in the latent space.
-        sample_size (`int`, *optional*, defaults to `32`): TODO
+        sample_size (`int`, *optional*, defaults to `32`): The height and width of input/output samples.
     """
 
     @register_to_config

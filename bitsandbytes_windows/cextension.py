@@ -18,7 +18,7 @@ class CUDALibrary_Singleton(object):
 
         if not binary_path.exists():
             # TODO[P3](training): Compile library for the detected CUDA version when binary is missing.
-            print(f"CUDA SETUP: TODO: compile library for specific version: {binary_name}")
+            print(f"CUDA SETUP: Missing compiled library for CUDA version {binary_name}; compile from source if needed.")
             legacy_binary_name = "libbitsandbytes.so"
             print(f"CUDA SETUP: Defaulting to {legacy_binary_name}...")
             binary_path = package_dir / legacy_binary_name
