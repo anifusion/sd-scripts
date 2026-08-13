@@ -6,3 +6,7 @@ venv
 build
 .vscode
 wandb
+.env
+.env.*
+!.env.example
+AGENTS.md
