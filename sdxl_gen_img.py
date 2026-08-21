@@ -2470,7 +2470,7 @@ def main(args):
 
                     prompt_args = raw_prompt.strip().split(" --")
                     prompt = prompt_args[0]
-                    logger.info(f"prompt {prompt_index+1}/{len(prompt_list)}: {prompt}")
+                    logger.info(f"processing prompt {prompt_index+1}/{len(prompt_list)}")
 
                     for parg in prompt_args[1:]:
                         try:
@@ -2558,13 +2558,13 @@ def main(args):
                             m = re.match(r"n (.+)", parg, re.IGNORECASE)
                             if m:  # negative prompt
                                 negative_prompt = m.group(1)
-                                logger.info(f"negative prompt: {negative_prompt}")
+                                logger.info("negative prompt configured")
                                 continue
 
                             m = re.match(r"c (.+)", parg, re.IGNORECASE)
                             if m:  # clip prompt
                                 clip_prompt = m.group(1)
-                                logger.info(f"clip prompt: {clip_prompt}")
+                                logger.info("clip prompt configured")
                                 continue
 
                             m = re.match(r"am ([\d\.\-,]+)", parg, re.IGNORECASE)
@@ -2695,8 +2695,7 @@ def main(args):
                                 continue
 
                         except ValueError as ex:
-                            logger.error(f"Exception in parsing / 解析エラー: {parg}")
-                            logger.error(f"{ex}")
+                            logger.error("Exception in prompt parsing / 解析エラー: %s", type(ex).__name__)
 
                 # override Deep Shrink
                 if ds_depth_1 is not None:

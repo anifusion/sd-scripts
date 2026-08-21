@@ -1346,7 +1346,7 @@ if __name__ == "__main__":
 
     print("HTTP Log", args.http_log)
     print("HTTP Log Name", args.http_log_name)
-    print("HTTP Log Token", args.http_log_token)
+    print("HTTP Log Token Configured", bool(args.http_log_token))
     print("HTTP Log Endpoint", args.http_log_endpoint)
     print("HTTP Log Every", args.http_log_every)
 
