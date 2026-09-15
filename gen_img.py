@@ -2424,7 +2424,6 @@ def main(args):
 
             # ControlNet使用時はguide imageをリサイズする
             if control_nets or control_net_lllites:
-                # TODO[P2](training): Implement resample method.
                 guide_images = guide_images if type(guide_images) == list else [guide_images]
                 guide_images = [i.resize((width, height), resample=PIL.Image.LANCZOS) for i in guide_images]
                 if len(guide_images) == 1:

@@ -33,7 +33,6 @@ def get_cuda_version(cuda, cudart_path):
     try:
         cudart = ctypes.CDLL(cudart_path)
     except OSError:
-        # TODO[P2](training): Error or warn when libcudart.so cannot be loaded.
         print(f'ERROR: libcudart.so could not be read from path: {cudart_path}!')
         return None
 
@@ -54,7 +53,6 @@ def get_cuda_lib_handle():
     try:
         cuda = ctypes.CDLL("libcuda.so")
     except OSError:
-        # TODO[P2](training): Error or warn when libcudart.so cannot be loaded.
         print('CUDA SETUP: WARNING! libcuda.so not found! Do you have a CUDA driver installed? If you are on a cluster, make sure you are on a CUDA machine!')
         return None
     check_cuda_result(cuda, cuda.cuInit(0))
