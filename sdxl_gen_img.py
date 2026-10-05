@@ -19,6 +19,7 @@ import numpy as np
 
 import torch
 from library.device_utils import init_ipex, clean_memory, get_preferred_device
+from library.operational_diagnostic import exception_diagnostic
 init_ipex()
 
 import torchvision
@@ -2694,7 +2695,7 @@ def main(args):
                                 continue
 
                         except ValueError as ex:
-                            logger.error("Exception in prompt parsing / 解析エラー: %s", type(ex).__name__)
+                            logger.error("Prompt parsing failed: %s", exception_diagnostic(ex, "prompt_parse"))
 
                 # override Deep Shrink
                 if ds_depth_1 is not None:
