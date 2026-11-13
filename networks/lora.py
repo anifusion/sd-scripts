@@ -473,6 +473,10 @@ def create_network(
     if module_dropout is not None:
         module_dropout = float(module_dropout)
 
+    text_encoder_mlp_only = str(kwargs.get("text_encoder_mlp_only", "false")).lower()
+    if text_encoder_mlp_only not in ("true", "false"):
+        raise ValueError("text_encoder_mlp_only must be true or false")
+
     # すごく引数が多いな ( ^ω^)･･･
     network = LoRANetwork(
         text_encoder,
@@ -491,6 +495,7 @@ def create_network(
         conv_block_alphas=conv_block_alphas,
         varbose=True,
         is_sdxl=is_sdxl,
+        text_encoder_mlp_only=text_encoder_mlp_only == "true",
     )
 
     loraplus_lr_ratio = kwargs.get("loraplus_lr_ratio", None)
@@ -895,6 +900,7 @@ class LoRANetwork(torch.nn.Module):
         module_class: Type[object] = LoRAModule,
         varbose: Optional[bool] = False,
         is_sdxl: Optional[bool] = False,
+        text_encoder_mlp_only: bool = False,
     ) -> None:
         """
         LoRA network: すごく引数が多いが、パターンは以下の通り
@@ -1021,6 +1027,10 @@ class LoRANetwork(torch.nn.Module):
         # 毎回すべてのモジュールを作るのは無駄なので要検討
         self.text_encoder_loras = []
         skipped_te = []
+        # CLIP SDPA used a separate class in older Transformers versions, so
+        # class-name matching selected only MLPs. Preserve that trained module
+        # inventory explicitly when reproducing those runs on a newer runtime.
+        text_encoder_targets = ["CLIPMLP"] if text_encoder_mlp_only else self.TEXT_ENCODER_TARGET_REPLACE_MODULE
         for i, text_encoder in enumerate(text_encoders):
             if len(text_encoders) > 1:
                 index = i + 1
@@ -1029,7 +1039,7 @@ class LoRANetwork(torch.nn.Module):
                 index = None
                 logger.info(f"create LoRA for Text Encoder:")
 
-            text_encoder_loras, skipped = create_modules(False, index, text_encoder, LoRANetwork.TEXT_ENCODER_TARGET_REPLACE_MODULE)
+            text_encoder_loras, skipped = create_modules(False, index, text_encoder, text_encoder_targets)
             self.text_encoder_loras.extend(text_encoder_loras)
             skipped_te += skipped
         logger.info(f"create LoRA for Text Encoder: {len(self.text_encoder_loras)} modules.")
