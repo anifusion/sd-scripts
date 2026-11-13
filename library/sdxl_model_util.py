@@ -3,7 +3,8 @@ import safetensors
 from accelerate import init_empty_weights
 from accelerate.utils.modeling import set_module_tensor_to_device
 from safetensors.torch import load_file, save_file
-from transformers import CLIPTextModel, CLIPTextConfig, CLIPTextModelWithProjection, CLIPTokenizer
+from transformers import CLIPTextConfig, CLIPTextModelWithProjection, CLIPTokenizer
+from library.clip_compat import CLIPTextModel
 from typing import List
 from diffusers import AutoencoderKL, EulerDiscreteScheduler, UNet2DConditionModel
 from library import model_util

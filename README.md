@@ -36,6 +36,7 @@ Most of the documents are written in Japanese.
 * [Training guide - common](./docs/train_README-ja.md) : data preparation, options etc... 
   * [Chinese version](./docs/train_README-zh.md)
 * [SDXL training](./docs/train_SDXL-en.md) (English version)
+* [CLIP and Transformers compatibility](./docs/transformers-compatibility.md)
 * [Dataset config](./docs/config_README-ja.md) 
   * [English version](./docs/config_README-en.md)
 * [DreamBooth training guide](./docs/train_db_README-ja.md)
